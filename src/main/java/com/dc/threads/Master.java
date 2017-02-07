@@ -16,7 +16,7 @@ public class Master {
 
     private int K;
 
-    private static final int MAX_WORK_UNIT = 50;
+    private static final int MAX_WORK_UNIT = 500;
 
     private static int numThreads;
 

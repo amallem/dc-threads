@@ -1,7 +1,7 @@
 package com.dc.threads;
 
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Created by mallem on 2/5/17.
@@ -13,11 +13,12 @@ public class Slave implements Runnable {
     private CountDownLatch latch;
     private final int K;
 
-    public Slave(int offset, int workUnit, int K, CountDownLatch latch) {
+    public Slave(int offset, int workUnit, int K, CountDownLatch latch, Set<Long> threadIds) {
         this.offset = offset;
         this.workUnit = workUnit;
         this.latch = latch;
         this.K = K;
+        threadIds.add(Thread.currentThread().getId());
     }
 
     public void run() {
@@ -31,7 +32,7 @@ public class Slave implements Runnable {
 
             for(int i=offset; i < offset+workUnit; i++) {
                 if(isSquare(sum_so_far)) {
-                    System.out.println(Thread.currentThread().getName() + " ===========================> " + i);
+                    System.out.println(Thread.currentThread().getName() + " " + sum_so_far + " ===========================> " + i);
                 }
                 sum_so_far -= (long) (i*i);
                 sum_so_far += (long) ((i+K) * (i+K));

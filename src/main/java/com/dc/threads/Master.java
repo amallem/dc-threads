@@ -1,8 +1,8 @@
 package com.dc.threads;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,32 +22,37 @@ public class Master {
 
     private ExecutorService executorService;
 
+    private final ThreadMXBean bean;
+
     public Master(int N, int K) {
         this.N = N;
         this.K = K;
         numThreads = Runtime.getRuntime().availableProcessors();
         executorService = Executors.newFixedThreadPool(numThreads);
-        //executorService = Executors.newFixedThreadPool(1);
+        bean = ManagementFactory.getThreadMXBean();
     }
 
     public void performOperations() {
         try {
             int workUnit = Math.min(N / 5, MAX_WORK_UNIT);
-            //int workUnit = N/numThreads;
             int offset = 1;
             long startTime = System.nanoTime();
             CountDownLatch latch = new CountDownLatch(N/workUnit);
+            HashSet<Long> threadIds = new HashSet<>();
 
-            while (offset <= (N - K)) {
-                executorService.submit(new Slave(offset, workUnit, K, latch));
+            while (offset <= N) {
+                executorService.submit(new Slave(offset, workUnit, K, latch, threadIds));
                 offset += workUnit;
             }
-            //latch.await();
-            executorService.shutdown();
+            latch.await();
+            long cpuTime = threadIds.stream().mapToLong(bean::getThreadCpuTime).sum();
+            executorService.shutdownNow();
             executorService.awaitTermination(30, TimeUnit.SECONDS);
             long endTime = System.nanoTime();
-            System.out.println("***************** " + (endTime - startTime));
-            //System.out.println(squares.toString());
+            System.out.println("Total Time: " + (endTime-startTime));
+            System.out.println("CPU Time: " + cpuTime);
+            double ratio = (double) (endTime - startTime) / (double) cpuTime;
+            System.out.println("***************** " + ratio);
         } catch(Exception e) {
             System.out.println("Exception Occurred in shutting down Executor");
         }

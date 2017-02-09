@@ -7,7 +7,7 @@ public class perfsquares {
 
     public static void main(String[] args) {
 
-        int N = Integer.parseInt(args[0]);
+        long N = Long.parseLong(args[0]);
         int K = Integer.parseInt(args[1]);
 
         Master master = new Master(N, K);
